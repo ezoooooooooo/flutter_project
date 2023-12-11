@@ -3,9 +3,12 @@ import '../widgets/rounded_button.dart';
 import '../widgets/rounded_textfield.dart';
 
 class LoginScreen extends StatelessWidget {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
         title: Text('Login'),
       ),
@@ -34,15 +37,13 @@ class LoginScreen extends StatelessWidget {
                   icon: Icons.lock,
                 ),
                 SizedBox(
-                    height:
-                        10), // Add a small space between password field and forgot password
+                  height: 10,
+                ),
                 TextButton(
                   onPressed: () {
-                    // Add logic to handle forgot password, e.g., show a reset password dialog
                     showDialog(
                       context: context,
                       builder: (BuildContext context) {
-                        // Add a dialog to handle password reset
                         return AlertDialog(
                           title: Text('Forgot Password'),
                           content:
@@ -50,16 +51,18 @@ class LoginScreen extends StatelessWidget {
                           actions: [
                             TextButton(
                               onPressed: () {
-                                // Implement logic to send a reset password email
-                                Navigator.pop(context); // Close the dialog
+                                Navigator.pop(context);
                               },
-                              child: Text('Send Email'),
+                              child: Text('Cancel'),
                             ),
                             TextButton(
                               onPressed: () {
-                                Navigator.pop(context); // Close the dialog
+                                // Implement logic to send a reset password email
+                                showSuccessMessage(
+                                    context, 'Password reset email sent');
+                                Navigator.pop(context);
                               },
-                              child: Text('Cancel'),
+                              child: Text('Send Email'),
                             ),
                           ],
                         );
@@ -76,13 +79,41 @@ class LoginScreen extends StatelessWidget {
                   text: 'Login',
                   icon: Icons.login,
                   onPressed: () {
-                    // Implement login logic here
+                    String email =
+                        ''; // Replace with the actual code to retrieve email
+
+                    if (email.contains(' ')) {
+                      showErrorMessage(
+                          context, 'Email should not contain spaces');
+                    } else {
+                      // Proceed with login logic
+                      // Implement login logic here
+                      showSuccessMessage(context, 'Successfully logged in');
+                    }
                   },
                 ),
               ],
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  void showErrorMessage(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
+
+  void showSuccessMessage(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.green,
       ),
     );
   }
