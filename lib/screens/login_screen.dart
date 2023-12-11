@@ -130,7 +130,7 @@ class LoginScreen extends StatelessWidget {
 
   bool isValidEmail(String email) {
     // Replace with your preferred email regex
-    String emailRegex = r'^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$';
+    String emailRegex = r'^[^\s@]+@[^\s@]+\.[^\s@]+$';
     return RegExp(emailRegex).hasMatch(email);
   }
 
