@@ -82,14 +82,24 @@ class LoginScreen extends StatelessWidget {
                     String email =
                         ''; // Replace with the actual code to retrieve email
 
-                    if (email.contains(' ')) {
-                      showErrorMessage(
-                          context, 'Email should not contain spaces');
-                    } else {
-                      // Proceed with login logic
-                      // Implement login logic here
-                      showSuccessMessage(context, 'Successfully logged in');
+                    // Validate email using regex
+                    if (!isValidEmail(email)) {
+                      showErrorMessage(context, 'Invalid email format');
+                      return;
                     }
+
+                    // Validate password using custom rules
+                    String password =
+                        ''; // Replace with the actual code to retrieve password
+                    if (!isValidPassword(password)) {
+                      showErrorMessage(
+                          context, 'Password must be at least 6 characters');
+                      return;
+                    }
+
+                    // Proceed with login logic
+                    // Implement login logic here
+                    showSuccessMessage(context, 'Successfully logged in');
                   },
                 ),
               ],
@@ -116,5 +126,16 @@ class LoginScreen extends StatelessWidget {
         backgroundColor: Colors.green,
       ),
     );
+  }
+
+  bool isValidEmail(String email) {
+    // Replace with your preferred email regex
+    String emailRegex = r'^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$';
+    return RegExp(emailRegex).hasMatch(email);
+  }
+
+  bool isValidPassword(String password) {
+    // Replace with your preferred password rules
+    return password.length >= 6;
   }
 }
