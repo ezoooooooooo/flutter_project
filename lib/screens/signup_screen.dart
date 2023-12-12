@@ -4,6 +4,9 @@ import '../widgets/rounded_textfield.dart';
 
 class SignUpScreen extends StatelessWidget {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -29,6 +32,7 @@ class SignUpScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 RoundedTextField(
+                  controller: _nameController,
                   hintText: 'Name',
                   icon: Icons.person,
                 ),
@@ -36,10 +40,12 @@ class SignUpScreen extends StatelessWidget {
                   height: 10,
                 ),
                 RoundedTextField(
+                  controller: _emailController,
                   hintText: 'Email',
                   icon: Icons.email,
                 ),
                 RoundedTextField(
+                  controller: _passwordController,
                   hintText: 'Password',
                   icon: Icons.lock,
                 ),
@@ -48,8 +54,8 @@ class SignUpScreen extends StatelessWidget {
                   text: 'Sign Up',
                   icon: Icons.person_add,
                   onPressed: () {
-                    String email =
-                        ''; // Replace with the actual code to retrieve email
+                    String email = _emailController.text;
+                    String password = _passwordController.text;
 
                     // Validate email using regex
                     if (!isValidEmail(email)) {
@@ -58,8 +64,6 @@ class SignUpScreen extends StatelessWidget {
                     }
 
                     // Validate password using custom rules
-                    String password =
-                        ''; // Replace with the actual code to retrieve password
                     if (!isValidPassword(password)) {
                       showErrorMessage(
                           context, 'Password must be at least 6 characters');

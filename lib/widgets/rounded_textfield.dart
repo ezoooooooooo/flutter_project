@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 
 class RoundedTextField extends StatelessWidget {
+  final TextEditingController? controller;
   final String hintText;
   final IconData icon;
 
-  RoundedTextField({required this.hintText, required this.icon});
+  RoundedTextField(
+      {this.controller, required this.hintText, required this.icon});
 
   @override
   Widget build(BuildContext context) {
@@ -24,6 +26,7 @@ class RoundedTextField extends StatelessWidget {
           SizedBox(width: 10),
           Expanded(
             child: TextField(
+              controller: controller,
               style: TextStyle(color: Colors.white),
               decoration: InputDecoration(
                 hintText: hintText,

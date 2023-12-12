@@ -2,8 +2,15 @@ import 'package:flutter/material.dart';
 import '../widgets/rounded_button.dart';
 import '../widgets/rounded_textfield.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
+  @override
+  _LoginScreenState createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -29,10 +36,12 @@ class LoginScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 RoundedTextField(
+                  controller: _emailController,
                   hintText: 'Email',
                   icon: Icons.email,
                 ),
                 RoundedTextField(
+                  controller: _passwordController,
                   hintText: 'Password',
                   icon: Icons.lock,
                 ),
@@ -79,8 +88,8 @@ class LoginScreen extends StatelessWidget {
                   text: 'Login',
                   icon: Icons.login,
                   onPressed: () {
-                    String email =
-                        ''; // Replace with the actual code to retrieve email
+                    String email = _emailController.text;
+                    String password = _passwordController.text;
 
                     // Validate email using regex
                     if (!isValidEmail(email)) {
@@ -89,8 +98,6 @@ class LoginScreen extends StatelessWidget {
                     }
 
                     // Validate password using custom rules
-                    String password =
-                        ''; // Replace with the actual code to retrieve password
                     if (!isValidPassword(password)) {
                       showErrorMessage(
                           context, 'Password must be at least 6 characters');
@@ -129,13 +136,18 @@ class LoginScreen extends StatelessWidget {
   }
 
   bool isValidEmail(String email) {
-    // Replace with your preferred email regex
     String emailRegex = r'^[^\s@]+@[^\s@]+\.[^\s@]+$';
     return RegExp(emailRegex).hasMatch(email);
   }
 
   bool isValidPassword(String password) {
-    // Replace with your preferred password rules
     return password.length >= 6;
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
   }
 }
