@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../widgets/rounded_button.dart';
 import '../widgets/rounded_textfield.dart';
+import 'home_screen.dart'; // Import the HomeScreen
 
 class SignUpScreen extends StatelessWidget {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
@@ -72,7 +73,14 @@ class SignUpScreen extends StatelessWidget {
 
                     // Proceed with sign-up logic
                     // Implement sign-up logic here
-                    showSuccessMessage(context, 'Successfully signed up');
+
+                    // Simulate a successful sign-up for demonstration purposes
+                    bool signUpSuccessful = true;
+
+                    if (signUpSuccessful) {
+                      // If sign-up is successful, navigate to the home screen
+                      Navigator.pushReplacementNamed(context, '/home');
+                    }
                   },
                 ),
               ],
@@ -110,5 +118,9 @@ class SignUpScreen extends StatelessWidget {
   bool isValidPassword(String password) {
     // Replace with your preferred password rules
     return password.length >= 6;
+  }
+
+  void navigateToHome(BuildContext context) {
+    Navigator.pushReplacementNamed(context, '/home');
   }
 }

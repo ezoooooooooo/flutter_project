@@ -6,10 +6,6 @@ import 'home_screen.dart'; // Import the HomeScreen
 class LoginScreen extends StatefulWidget {
   @override
   _LoginScreenState createState() => _LoginScreenState();
-
-  void navigateToHome(BuildContext context) {
-    Navigator.pushReplacementNamed(context, '/home');
-  }
 }
 
 class _LoginScreenState extends State<LoginScreen> {
@@ -50,9 +46,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   hintText: 'Password',
                   icon: Icons.lock,
                 ),
-                SizedBox(
-                  height: 10,
-                ),
+                SizedBox(height: 10),
                 TextButton(
                   onPressed: () {
                     showDialog(
@@ -96,28 +90,17 @@ class _LoginScreenState extends State<LoginScreen> {
                     String email = _emailController.text;
                     String password = _passwordController.text;
 
-                    // Validate email using regex
-                    if (!isValidEmail(email)) {
-                      showErrorMessage(context, 'Invalid email format');
-                      return;
-                    }
+                    bool isValidEmailAndPassword =
+                        isValidEmail(email) && isValidPassword(password);
 
-                    // Validate password using custom rules
-                    if (!isValidPassword(password)) {
+                    if (!isValidEmailAndPassword) {
                       showErrorMessage(
-                          context, 'Password must be at least 6 characters');
-                      return;
-                    }
-
-                    // Simulating a successful login for demonstration purposes
-                    bool loginSuccessful = true;
-
-                    if (loginSuccessful) {
-                      widget.navigateToHome(context);
+                          context, 'Invalid email or password format');
                     } else {
-                      // Handle unsuccessful login
-                      showErrorMessage(
-                          context, 'Login failed. Invalid credentials.');
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => HomeScreen()));
                     }
                   },
                 ),
@@ -154,6 +137,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
   bool isValidPassword(String password) {
     return password.length >= 6;
+  }
+
+  void navigateToHome(BuildContext context) {
+    Navigator.pushReplacementNamed(context, '/home');
   }
 
   @override
