@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 import '../widgets/rounded_button.dart';
 import '../widgets/rounded_textfield.dart';
+import 'home_screen.dart'; // Import the HomeScreen
 
 class LoginScreen extends StatefulWidget {
   @override
   _LoginScreenState createState() => _LoginScreenState();
+
+  void navigateToHome(BuildContext context) {
+    Navigator.pushReplacementNamed(context, '/home');
+  }
 }
 
 class _LoginScreenState extends State<LoginScreen> {
@@ -104,9 +109,16 @@ class _LoginScreenState extends State<LoginScreen> {
                       return;
                     }
 
-                    // Proceed with login logic
-                    // Implement login logic here
-                    showSuccessMessage(context, 'Successfully logged in');
+                    // Simulating a successful login for demonstration purposes
+                    bool loginSuccessful = true;
+
+                    if (loginSuccessful) {
+                      widget.navigateToHome(context);
+                    } else {
+                      // Handle unsuccessful login
+                      showErrorMessage(
+                          context, 'Login failed. Invalid credentials.');
+                    }
                   },
                 ),
               ],
