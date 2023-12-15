@@ -47,6 +47,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   controller: _passwordController,
                   hintText: 'Password',
                   icon: Icons.lock,
+                  isPassword: true,
                 ),
                 SizedBox(height: 10),
                 TextButton(

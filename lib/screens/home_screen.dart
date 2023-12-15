@@ -1,6 +1,30 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
+  @override
+  _HomeScreenState createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  List<DocumentSnapshot> halls = [];
+
+  void filterHalls(String query) {
+    _firestore
+        .collection('halls')
+        .where('name', isGreaterThanOrEqualTo: query)
+        .where('name', isLessThan: query + 'z')
+        .snapshots()
+        .listen((snapshot) {
+      if (snapshot.docs.isNotEmpty) {
+        setState(() {
+          halls = snapshot.docs;
+        });
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -68,82 +92,105 @@ class HomeScreen extends StatelessWidget {
           ],
         ),
       ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Cover Photo
-            Container(
-              height: 150,
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                  image: AssetImage('assets/osama.jpg'),
-                  fit: BoxFit.cover,
-                ),
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-            SizedBox(height: 20),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: _firestore.collection('halls').snapshots(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return CircularProgressIndicator();
+          }
 
-            // Search Bar
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.grey[200],
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: TextField(
-                decoration: InputDecoration(
-                  prefixIcon: Icon(Icons.search),
-                  hintText: 'Search for housing...',
-                  border: InputBorder.none,
-                ),
-              ),
-            ),
-            SizedBox(height: 20),
+          if (halls.isEmpty) {
+            halls = snapshot.data!.docs;
+          }
 
-            // House Posts
-            Text(
-              'Featured Houses',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          return SingleChildScrollView(
+            padding: EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Cover Photo
+                Container(
+                  height: 150,
+                  decoration: BoxDecoration(
+                    image: DecorationImage(
+                      image: AssetImage('assets/osama.jpg'),
+                      fit: BoxFit.cover,
+                    ),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                SizedBox(height: 20),
+
+                // Search Bar
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.grey[200],
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: TextField(
+                    onChanged: (query) {
+                      filterHalls(query);
+                    },
+                    decoration: InputDecoration(
+                      prefixIcon: Icon(Icons.search),
+                      hintText: 'Search for housing...',
+                      border: InputBorder.none,
+                    ),
+                  ),
+                ),
+                SizedBox(height: 20),
+
+                // Hall Posts
+                Text(
+                  'Featured Halls',
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                ),
+                GridView.builder(
+                  shrinkWrap: true,
+                  physics: NeverScrollableScrollPhysics(),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 16,
+                    mainAxisSpacing: 16,
+                    childAspectRatio: 0.8, // Adjusted the aspect ratio
+                  ),
+                  itemCount: halls.length,
+                  itemBuilder: (context, index) {
+                    var hall = halls[index].data() as Map<String, dynamic>;
+
+                    return _buildHallCard(
+                      context,
+                      hall['name'] as String? ?? '',
+                      hall['price'] as String? ?? '',
+                      hall['location'] as String? ?? '',
+                      hall['capacity'] as int? ?? 0,
+                      hall['image'] as String? ?? '',
+                      index,
+                    );
+                  },
+                ),
+              ],
             ),
-            GridView.builder(
-              shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-                childAspectRatio: 0.8, // Adjusted the aspect ratio
-              ),
-              itemCount: 6,
-              itemBuilder: (context, index) {
-                return _buildHousePost(context, 'House ${index + 1}',
-                    '\$${(index + 1) * 500}/month', index + 1);
-              },
-            ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
 
-  Widget _buildHousePost(
-      BuildContext context, String title, String price, int houseNumber) {
-    List<Color> colors = [
-      Colors.blue,
-      Colors.orange,
-      Colors.green,
-      Colors.purple,
-      Colors.red,
-      Colors.teal,
-    ];
-
+  Widget _buildHallCard(
+    BuildContext context,
+    String name,
+    String price,
+    String location,
+    int capacity,
+    String imageName,
+    int index,
+  ) {
     return GestureDetector(
       onTap: () {
-        // Add logic for handling tap on the post
-        print('Tapped on house post: $title');
-        // Navigate to house details page or perform other actions
+        // Add logic for handling tap on the hall
+        print('Tapped on hall: $name');
+        // Navigate to hall details page or perform other actions
       },
       child: Card(
         margin: EdgeInsets.all(8),
@@ -151,46 +198,61 @@ class HomeScreen extends StatelessWidget {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
         ),
-        color: colors[houseNumber % colors.length], // Apply color from the list
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(10),
-                topRight: Radius.circular(10),
-              ),
-              child: Container(
-                height: 80, // Adjusted the height
-                decoration: BoxDecoration(
-                  image: DecorationImage(
-                    image: AssetImage('assets/2$houseNumber.jpg'),
-                    fit: BoxFit.cover,
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10),
+            color: Colors.primaries[index % Colors.primaries.length],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(10),
+                  topRight: Radius.circular(10),
+                ),
+                child: Container(
+                  height: 80, // Adjusted the height
+                  decoration: BoxDecoration(
+                    image: DecorationImage(
+                      image: AssetImage('assets/$imageName.jpg'),
+                      fit: BoxFit.cover,
+                    ),
                   ),
                 ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white),
-                  ),
-                  SizedBox(height: 4),
-                  Text(
-                    'Price: $price',
-                    style: TextStyle(fontSize: 12, color: Colors.white),
-                  ),
-                ],
+              Padding(
+                padding: const EdgeInsets.all(8),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      name,
+                      style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      'Price: $price',
+                      style: TextStyle(fontSize: 12, color: Colors.black),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      'Location: $location',
+                      style: TextStyle(fontSize: 12, color: Colors.black),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      'Capacity: $capacity',
+                      style: TextStyle(fontSize: 12, color: Colors.black),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

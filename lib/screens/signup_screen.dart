@@ -52,6 +52,7 @@ class SignUpScreen extends StatelessWidget {
                   controller: _passwordController,
                   hintText: 'Password',
                   icon: Icons.lock,
+                  isPassword: true,
                 ),
                 SizedBox(height: 20),
                 RoundedButton(
