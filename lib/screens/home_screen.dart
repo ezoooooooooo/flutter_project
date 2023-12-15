@@ -78,7 +78,7 @@ class HomeScreen extends StatelessWidget {
               height: 150,
               decoration: BoxDecoration(
                 image: DecorationImage(
-                  image: AssetImage('assets/cover_photo.jpg'),
+                  image: AssetImage('assets/osama.jpg'),
                   fit: BoxFit.cover,
                 ),
                 borderRadius: BorderRadius.circular(10),
@@ -164,7 +164,7 @@ class HomeScreen extends StatelessWidget {
                 height: 80, // Adjusted the height
                 decoration: BoxDecoration(
                   image: DecorationImage(
-                    image: AssetImage('assets/house_$houseNumber.jpg'),
+                    image: AssetImage('assets/2$houseNumber.jpg'),
                     fit: BoxFit.cover,
                   ),
                 ),

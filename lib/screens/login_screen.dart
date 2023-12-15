@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'home_screen.dart'; // Import the HomeScreen
 import '../widgets/rounded_button.dart';
 import '../widgets/rounded_textfield.dart';
-import 'home_screen.dart'; // Import the HomeScreen
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -9,6 +10,7 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -64,11 +66,25 @@ class _LoginScreenState extends State<LoginScreen> {
                               child: Text('Cancel'),
                             ),
                             TextButton(
-                              onPressed: () {
-                                // Implement logic to send a reset password email
-                                showSuccessMessage(
-                                    context, 'Password reset email sent');
-                                Navigator.pop(context);
+                              onPressed: () async {
+                                String email = _emailController.text;
+
+                                try {
+                                  await _auth.sendPasswordResetEmail(
+                                    email: email,
+                                  );
+                                  showSuccessMessage(
+                                    context,
+                                    'Password reset email sent',
+                                  );
+                                  Navigator.pop(context);
+                                } catch (e) {
+                                  showErrorMessage(
+                                    context,
+                                    'Error sending reset email',
+                                  );
+                                  Navigator.pop(context);
+                                }
                               },
                               child: Text('Send Email'),
                             ),
@@ -86,23 +102,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 RoundedButton(
                   text: 'Login',
                   icon: Icons.login,
-                  onPressed: () {
-                    String email = _emailController.text;
-                    String password = _passwordController.text;
-
-                    bool isValidEmailAndPassword =
-                        isValidEmail(email) && isValidPassword(password);
-
-                    if (!isValidEmailAndPassword) {
-                      showErrorMessage(
-                          context, 'Invalid email or password format');
-                    } else {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => HomeScreen()));
-                    }
-                  },
+                  onPressed: _login,
                 ),
               ],
             ),
@@ -110,6 +110,27 @@ class _LoginScreenState extends State<LoginScreen> {
         ],
       ),
     );
+  }
+
+  void _login() async {
+    String email = _emailController.text;
+    String password = _passwordController.text;
+
+    try {
+      await _auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      // Authentication successful, navigate to HomeScreen
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => HomeScreen()),
+      );
+    } catch (e) {
+      // Authentication failed, show error message
+      showErrorMessage(context, 'Invalid email or password');
+    }
   }
 
   void showErrorMessage(BuildContext context, String message) {
@@ -137,10 +158,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
   bool isValidPassword(String password) {
     return password.length >= 6;
-  }
-
-  void navigateToHome(BuildContext context) {
-    Navigator.pushReplacementNamed(context, '/home');
   }
 
   @override
