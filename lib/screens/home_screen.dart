@@ -21,70 +21,69 @@ class HomeScreen extends StatelessWidget {
           ),
         ],
       ),
+      drawer: Drawer(
+        child: ListView(
+          children: [
+            DrawerHeader(
+              decoration: BoxDecoration(
+                color: Colors.blue,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  CircleAvatar(
+                    radius: 30,
+                    backgroundColor: Colors.white,
+                    // Add user profile image here
+                  ),
+                  SizedBox(height: 10),
+                  Text(
+                    'User Name',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            ListTile(
+              leading: Icon(Icons.settings),
+              title: Text('Settings'),
+              onTap: () {
+                // Add logic for settings page
+                Navigator.pop(context);
+                // Navigate to settings page
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.exit_to_app),
+              title: Text('Logout'),
+              onTap: () {
+                // Add logic for logout
+                Navigator.pop(context);
+                // Implement logout functionality
+              },
+            ),
+          ],
+        ),
+      ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Banner Image
+            // Cover Photo
             Container(
-              height: 200,
+              height: 150,
               decoration: BoxDecoration(
                 image: DecorationImage(
-                  image:
-                      AssetImage('assets/osama.jpg'), // Replace with your image
+                  image: AssetImage('assets/cover_photo.jpg'),
                   fit: BoxFit.cover,
                 ),
                 borderRadius: BorderRadius.circular(10),
               ),
             ),
-            SizedBox(height: 20),
-
-            // Featured Listings
-            Text(
-              'Featured Listings',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            // Placeholder: List of featured listing widgets
-            SizedBox(height: 150),
-            // Add a carousel or grid view for featured listings
-
-            SizedBox(height: 20),
-
-            // Categories
-            Text(
-              'Categories',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            // Placeholder: List of category widgets
-            SizedBox(
-              height: 100,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                children: [
-                  _buildCategoryCard('Studio', Icons.apartment, Colors.blue,
-                      () {
-                    // Add logic for Studio category
-                    print('Studio category pressed');
-                  }),
-                  _buildCategoryCard('1 Bedroom', Icons.apartment, Colors.green,
-                      () {
-                    // Add logic for 1 Bedroom category
-                    print('1 Bedroom category pressed');
-                  }),
-                  _buildCategoryCard(
-                      '2 Bedrooms', Icons.apartment, Colors.orange, () {
-                    // Add logic for 2 Bedrooms category
-                    print('2 Bedrooms category pressed');
-                  }),
-                  _buildCategoryCard('Shared', Icons.people, Colors.purple, () {
-                    // Add logic for Shared category
-                    print('Shared category pressed');
-                  }),
-                ],
-              ),
-            ),
-
             SizedBox(height: 20),
 
             // Search Bar
@@ -103,128 +102,25 @@ class HomeScreen extends StatelessWidget {
             ),
             SizedBox(height: 20),
 
-            // User Preferences & Services
+            // House Posts
             Text(
-              'Preferences & Services',
+              'Featured Houses',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
-            // Placeholder: List of preference and service widgets
-            SizedBox(
-              height: 100,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                children: [
-                  _buildPreferenceCard('Furnished', Icons.home, Colors.red, () {
-                    // Add logic for Furnished preference
-                    print('Furnished preference pressed');
-                  }),
-                  _buildPreferenceCard(
-                      'Utilities Included', Icons.light, Colors.yellow, () {
-                    // Add logic for Utilities Included preference
-                    print('Utilities Included preference pressed');
-                  }),
-                  _buildPreferenceCard('Pet Friendly', Icons.pets, Colors.teal,
-                      () {
-                    // Add logic for Pet Friendly preference
-                    print('Pet Friendly preference pressed');
-                  }),
-                  _buildPreferenceCard(
-                      'Parking', Icons.local_parking, Colors.pink, () {
-                    // Add logic for Parking preference
-                    print('Parking preference pressed');
-                  }),
-                ],
+            GridView.builder(
+              shrinkWrap: true,
+              physics: NeverScrollableScrollPhysics(),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 16,
+                childAspectRatio: 0.8, // Adjusted the aspect ratio
               ),
-            ),
-
-            SizedBox(height: 20),
-
-            // Nearby Experiences
-            Text(
-              'Nearby Experiences',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            // Placeholder: Horizontal scrollable list of experience widgets
-            SizedBox(
-              height: 100,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                children: [
-                  _buildExperienceCard(
-                      'Local Restaurants', Icons.restaurant, Colors.blue, () {
-                    // Add logic for Local Restaurants experience
-                    print('Local Restaurants experience pressed');
-                  }),
-                  _buildExperienceCard('Parks', Icons.park, Colors.green, () {
-                    // Add logic for Parks experience
-                    print('Parks experience pressed');
-                  }),
-                  _buildExperienceCard(
-                      'Gyms', Icons.fitness_center, Colors.orange, () {
-                    // Add logic for Gyms experience
-                    print('Gyms experience pressed');
-                  }),
-                ],
-              ),
-            ),
-
-            SizedBox(height: 20),
-
-            // Recommended for You
-            Text(
-              'Recommended for You',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            // Placeholder: Grid or carousel of recommended widgets
-            SizedBox(
-              height: 150,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                children: [
-                  _buildRecommendedCard('Modern Studio Apartment', '\$1200',
-                      'assets/apartment1.jpg', Colors.purple, () {
-                    // Add logic for Modern Studio Apartment recommendation
-                    print('Modern Studio Apartment recommendation pressed');
-                  }),
-                  _buildRecommendedCard('Cozy 1 Bedroom', '\$1500',
-                      'assets/apartment2.jpg', Colors.orange, () {
-                    // Add logic for Cozy 1 Bedroom recommendation
-                    print('Cozy 1 Bedroom recommendation pressed');
-                  }),
-                  _buildRecommendedCard('Spacious 2 Bedrooms', '\$2000',
-                      'assets/apartment3.jpg', Colors.blue, () {
-                    // Add logic for Spacious 2 Bedrooms recommendation
-                    print('Spacious 2 Bedrooms recommendation pressed');
-                  }),
-                ],
-              ),
-            ),
-
-            SizedBox(height: 20),
-
-            // Explore Listings Button
-            ElevatedButton(
-              onPressed: () {
-                // Add logic for exploring listings
-                print('Explore Listings button pressed');
+              itemCount: 6,
+              itemBuilder: (context, index) {
+                return _buildHousePost(context, 'House ${index + 1}',
+                    '\$${(index + 1) * 500}/month', index + 1);
               },
-              style: ElevatedButton.styleFrom(
-                primary: Colors.blue, // Replace with your preferred color
-              ),
-              child: Text('Explore Listings'),
-            ),
-            SizedBox(height: 20),
-
-            // Preferences & Services Button
-            ElevatedButton(
-              onPressed: () {
-                // Add logic for user preferences and services
-                print('Preferences & Services button pressed');
-              },
-              style: ElevatedButton.styleFrom(
-                primary: Colors.green, // Replace with your preferred color
-              ),
-              child: Text('Preferences & Services'),
             ),
           ],
         ),
@@ -232,111 +128,64 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildCategoryCard(
-      String title, IconData icon, Color color, VoidCallback onPressed) {
-    return Card(
-      color: color,
-      child: InkWell(
-        onTap: onPressed,
-        splashColor: Colors.white.withOpacity(0.5),
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, color: Colors.white),
-              SizedBox(height: 8),
-              Text(title, style: TextStyle(color: Colors.white)),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+  Widget _buildHousePost(
+      BuildContext context, String title, String price, int houseNumber) {
+    List<Color> colors = [
+      Colors.blue,
+      Colors.orange,
+      Colors.green,
+      Colors.purple,
+      Colors.red,
+      Colors.teal,
+    ];
 
-  Widget _buildPreferenceCard(
-      String title, IconData icon, Color color, VoidCallback onPressed) {
-    return Card(
-      color: color,
-      child: InkWell(
-        onTap: onPressed,
-        splashColor: Colors.white.withOpacity(0.5),
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, color: Colors.white),
-              SizedBox(height: 8),
-              Text(title, style: TextStyle(color: Colors.white)),
-            ],
-          ),
+    return GestureDetector(
+      onTap: () {
+        // Add logic for handling tap on the post
+        print('Tapped on house post: $title');
+        // Navigate to house details page or perform other actions
+      },
+      child: Card(
+        margin: EdgeInsets.all(8),
+        elevation: 4,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
         ),
-      ),
-    );
-  }
-
-  Widget _buildExperienceCard(
-      String title, IconData icon, Color color, VoidCallback onPressed) {
-    return Card(
-      color: color,
-      child: InkWell(
-        onTap: onPressed,
-        splashColor: Colors.white.withOpacity(0.5),
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, color: Colors.white),
-              SizedBox(height: 8),
-              Text(title, style: TextStyle(color: Colors.white)),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildRecommendedCard(String title, String price, String imagePath,
-      Color color, VoidCallback onPressed) {
-    return Card(
-      color: color,
-      child: InkWell(
-        onTap: onPressed,
-        splashColor: Colors.white.withOpacity(0.5),
+        color: colors[houseNumber % colors.length], // Apply color from the list
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Container(
-              height: 100,
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                  image: AssetImage(imagePath),
-                  fit: BoxFit.cover,
-                ),
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(10),
-                  topRight: Radius.circular(10),
+            ClipRRect(
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(10),
+                topRight: Radius.circular(10),
+              ),
+              child: Container(
+                height: 80, // Adjusted the height
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                    image: AssetImage('assets/house_$houseNumber.jpg'),
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(8.0),
+              padding: const EdgeInsets.all(8),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     title,
                     style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 14,
                         fontWeight: FontWeight.bold,
                         color: Colors.white),
                   ),
                   SizedBox(height: 4),
                   Text(
                     'Price: $price',
-                    style: TextStyle(color: Colors.grey),
+                    style: TextStyle(fontSize: 12, color: Colors.white),
                   ),
                 ],
               ),

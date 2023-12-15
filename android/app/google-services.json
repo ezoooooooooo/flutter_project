@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "381491556997",
+    "project_id": "saknuk-35ef9",
+    "storage_bucket": "saknuk-35ef9.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:381491556997:android:2ddcfde293b61ed3f26fec",
+        "android_client_info": {
+          "package_name": "com.example.studenthousingapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC1lbvBEvSuN4JAUjlgOcBWDEbl-Ksbc10"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
