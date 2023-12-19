@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../widgets/rounded_button.dart';
 import '../widgets/rounded_textfield.dart';
-import 'home_screen.dart';
 
 class SignUpScreen extends StatelessWidget {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
@@ -59,19 +58,16 @@ class SignUpScreen extends StatelessWidget {
                   text: 'Sign Up',
                   icon: Icons.person_add,
                   onPressed: () async {
+                    String name = _nameController.text;
                     String email = _emailController.text;
                     String password = _passwordController.text;
 
-                    // Validate email using regex
-                    if (!isValidEmail(email)) {
-                      showErrorMessage(context, 'Invalid email format');
-                      return;
-                    }
-
-                    // Validate password using custom rules
-                    if (!isValidPassword(password)) {
+                    // Validate name, email, and password
+                    if (name.isEmpty ||
+                        !isValidEmail(email) ||
+                        !isValidPassword(password)) {
                       showErrorMessage(
-                          context, 'Password must be at least 6 characters');
+                          context, 'Invalid input. Please check your details.');
                       return;
                     }
 
@@ -85,8 +81,13 @@ class SignUpScreen extends StatelessWidget {
 
                       // Check if signup was successful
                       if (userCredential.user != null) {
-                        // If signup is successful, navigate to the home screen
-                        Navigator.pushReplacementNamed(context, '/home');
+                        // Add user's name to Firebase user profile
+                        await userCredential.user!.updateDisplayName(name);
+
+                        // You can add additional actions here if needed
+
+                        // Example: show a success message
+                        showSuccessMessage(context, 'Signup successful');
                       } else {
                         showErrorMessage(context, 'Signup failed');
                       }
@@ -109,6 +110,15 @@ class SignUpScreen extends StatelessWidget {
       SnackBar(
         content: Text(message),
         backgroundColor: Colors.red,
+      ),
+    );
+  }
+
+  void showSuccessMessage(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.green,
       ),
     );
   }

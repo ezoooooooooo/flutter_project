@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'home_screen.dart'; // Import the HomeScreen
 import '../widgets/rounded_button.dart';
 import '../widgets/rounded_textfield.dart';
 
@@ -123,11 +122,7 @@ class _LoginScreenState extends State<LoginScreen> {
         password: password,
       );
 
-      // Authentication successful, navigate to HomeScreen
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => HomeScreen()),
-      );
+      // If needed, you can add actions after successful login here
     } catch (e) {
       // Authentication failed, show error message
       showErrorMessage(context, 'Invalid email or password');
@@ -150,15 +145,6 @@ class _LoginScreenState extends State<LoginScreen> {
         backgroundColor: Colors.green,
       ),
     );
-  }
-
-  bool isValidEmail(String email) {
-    String emailRegex = r'^[^\s@]+@[^\s@]+\.[^\s@]+$';
-    return RegExp(emailRegex).hasMatch(email);
-  }
-
-  bool isValidPassword(String password) {
-    return password.length >= 6;
   }
 
   @override

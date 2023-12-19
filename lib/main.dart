@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'screens/auth_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/signup_screen.dart';
-import 'screens/home_screen.dart'; // Import the HomeScreen
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 
@@ -32,7 +31,6 @@ class MyApp extends StatelessWidget {
         '/auth_choice': (context) => AuthChoiceScreen(),
         '/login': (context) => LoginScreen(),
         '/signup': (context) => SignUpScreen(),
-        '/home': (context) => HomeScreen(), // Ensure HomeScreen is referenced
       },
     );
   }
