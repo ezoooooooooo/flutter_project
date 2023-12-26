@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../widgets/rounded_button.dart';
 import '../widgets/rounded_textfield.dart';
+import 'home_screen.dart';
 
 class SignUpScreen extends StatelessWidget {
+  
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
@@ -83,6 +85,10 @@ class SignUpScreen extends StatelessWidget {
                       if (userCredential.user != null) {
                         // Add user's name to Firebase user profile
                         await userCredential.user!.updateDisplayName(name);
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (context) => HomeScreen()),
+                        );
 
                         // You can add additional actions here if needed
 

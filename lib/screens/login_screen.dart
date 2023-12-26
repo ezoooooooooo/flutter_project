@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../widgets/rounded_button.dart';
 import '../widgets/rounded_textfield.dart';
+import 'home_screen.dart';
+
 
 class LoginScreen extends StatefulWidget {
+  
   @override
   _LoginScreenState createState() => _LoginScreenState();
 }
@@ -113,21 +116,26 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _login() async {
-    String email = _emailController.text;
-    String password = _passwordController.text;
+  String email = _emailController.text;
+  String password = _passwordController.text;
+  BuildContext context = _scaffoldKey.currentContext!;
 
-    try {
-      await _auth.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
+  try {
+    await _auth.signInWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => HomeScreen()),
+    );
 
-      // If needed, you can add actions after successful login here
-    } catch (e) {
-      // Authentication failed, show error message
-      showErrorMessage(context, 'Invalid email or password');
-    }
+    // If needed, you can add actions after successful login here
+  } catch (e) {
+    // Authentication failed, show error message
+    showErrorMessage(context, 'Invalid email or password');
   }
+}
 
   void showErrorMessage(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(
