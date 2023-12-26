@@ -4,12 +4,12 @@ import 'package:url_launcher/url_launcher.dart';
 
 class PropertyListingCard extends StatelessWidget {
   final Map<String, dynamic> apartmentData;
-  final bool isSaved; // Add isSaved parameter
-  final Function(bool isSaved)? onSaved;
+  final bool? isSaved; // Add isSaved parameter
+  final Function(bool?)? onSaved;
 
   PropertyListingCard({
     required this.apartmentData,
-    required this.isSaved,
+    this.isSaved,
     this.onSaved,
   });
 
@@ -39,13 +39,13 @@ class PropertyListingCard extends StatelessWidget {
               children: [
                 IconButton(
                   icon: Icon(
-                    isSaved ? Icons.favorite : Icons.favorite_border,
-                    color: isSaved ? Colors.red : null,
+                    isSaved ?? false ? Icons.favorite : Icons.favorite_border,
+                    color: isSaved ?? false ? Colors.red : null,
                   ),
                   onPressed: () {
                     // Toggle the saved state
                     if (onSaved != null) {
-                      onSaved!(isSaved);
+                      onSaved!(isSaved ?? false);
                     }
                   },
                 ),

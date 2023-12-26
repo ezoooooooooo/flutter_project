@@ -1,4 +1,5 @@
 // custom_search_delegate.dart
+// custom_search_delegate.dart
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../widgets/property_listing_card.dart';
@@ -55,24 +56,24 @@ class CustomSearchDelegate extends SearchDelegate<String> {
           return Text('Error: ${snapshot.error}');
         }
 
-        List<DocumentSnapshot> apartments = snapshot.data ?? [];
+        List<DocumentSnapshot>? apartments = snapshot.data;
+
+        if (apartments == null || apartments.isEmpty) {
+          return Text('No apartments found.');
+        }
 
         return ListView.builder(
           itemCount: apartments.length,
           itemBuilder: (context, index) {
             return PropertyListingCard(
               apartmentData: apartments[index].data() as Map<String, dynamic>,
-              isSaved: false, // Set isSaved to false for search results
+              // Pass isSaved based on the saved state in Firestore
+              isSaved: apartments[index]['isSaved'] ?? false,
               onSaved: (isSaved) async {
-                // Call the onSaved callback passed from the home screen
-                onSaved(isSaved); // Directly call the onSaved method
-
-                // Perform asynchronous operations based on the result
-                if (isSaved) {
-                  await apartmentsCollection.doc(apartments[index].id).update({'isSaved': true});
-                } else {
-                  await apartmentsCollection.doc(apartments[index].id).update({'isSaved': false});
-                }
+                // Update the saved state in the Firestore collection
+                await apartmentsCollection
+                    .doc(apartments[index].id)
+                    .update({'isSaved': isSaved});
               },
             );
           },

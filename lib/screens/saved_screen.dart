@@ -1,32 +1,44 @@
 // saved_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../widgets/property_listing_card.dart';
 
-class SavedScreen extends StatelessWidget {
+class SavedScreen extends StatefulWidget {
   final List<DocumentSnapshot> savedApartments;
+  final Function(String, bool) onSavedStateChanged;
 
-  SavedScreen({required this.savedApartments});
+  SavedScreen({
+    required this.savedApartments,
+    required this.onSavedStateChanged,
+  });
 
+  @override
+  _SavedScreenState createState() => _SavedScreenState();
+}
+
+class _SavedScreenState extends State<SavedScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Saved Apartments'),
       ),
-      body: savedApartments.isEmpty
+      body: widget.savedApartments.isEmpty
           ? Center(
               child: Text('No saved apartments.'),
             )
           : ListView.builder(
-              itemCount: savedApartments.length,
+              itemCount: widget.savedApartments.length,
               itemBuilder: (context, index) {
+                // Extract the apartment data from the document snapshot
+                Map<String, dynamic> apartmentData = widget.savedApartments[index].data() as Map<String, dynamic>;
+
                 return PropertyListingCard(
-                  apartmentData: savedApartments[index].data() as Map<String, dynamic>,
+                  apartmentData: apartmentData,
                   isSaved: true,
                   onSaved: (isSaved) {
-                    // Handle saving state changes if needed
+                    // Notify the parent widget about the save state change
+                    widget.onSavedStateChanged(widget.savedApartments[index].id, isSaved ?? false);
                   },
                 );
               },
@@ -34,3 +46,4 @@ class SavedScreen extends StatelessWidget {
     );
   }
 }
+
