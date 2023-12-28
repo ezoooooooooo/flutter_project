@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:studenthousingapp/main.dart';
 import '../widgets/rounded_button.dart';
 import '../widgets/rounded_textfield.dart';
 import 'home_screen.dart';
@@ -101,6 +102,15 @@ class _LoginScreenState extends State<LoginScreen> {
                     style: TextStyle(color: Colors.blueAccent),
                   ),
                 ),
+                  Center(
+                  child: GestureDetector(
+                    onTap: _navigateToSignUpScreen,
+                    child: Text(
+                      'Don\'t have an account? Sign up',
+                      style: TextStyle(color: Colors.blueAccent),
+                    ),
+                  ),
+                ),
                 SizedBox(height: 20),
                 RoundedButton(
                   text: 'Login',
@@ -153,6 +163,9 @@ class _LoginScreenState extends State<LoginScreen> {
         backgroundColor: Colors.green,
       ),
     );
+  }
+  void _navigateToSignUpScreen() {
+    Navigator.pushReplacementNamed(context, MyApp.signupRoute);
   }
 
   @override
