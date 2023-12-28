@@ -1,9 +1,6 @@
-// home_screen.dart
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../widgets/property_listing_card.dart';
-import '../models/custom_search_delegate.dart';
-import '../screens/saved_screen.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -11,312 +8,503 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final CollectionReference apartmentsCollection =
-      FirebaseFirestore.instance.collection('housing');
-  List<Map<String, dynamic>> savedApartments = [];
-  List<String> savedApartmentIds = [];
-  int? selectedBeds;
-  RangeValues selectedPriceRange = const RangeValues(0, 2000);
+  late PageController _pageController;
+  late List<Apartment> _apartments;
+  late List<Apartment> _filteredApartments;
+  TextEditingController _searchController = TextEditingController();
+  int? _selectedBedsFilter;
+  double? _minPriceFilter;
+  double? _maxPriceFilter;
 
-  // Declare a navigator key
-  final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController();
+    _apartments = [];
+    _filteredApartments = [];
+
+    // Fetch apartments from Firestore
+    fetchApartments();
+  }
+
+  void fetchApartments() async {
+    var snapshots =
+        await FirebaseFirestore.instance.collection('housing').get();
+
+    List<Apartment> apartments =
+        snapshots.docs.map((doc) => Apartment.fromSnapshot(doc)).toList();
+
+    setState(() {
+      _apartments = apartments;
+      _filteredApartments = apartments;
+    });
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      navigatorKey: navigatorKey,
-      home: Scaffold(
-        appBar: AppBar(
-          title: Text('Student Housing App'),
-          actions: [
-            IconButton(
-              icon: Icon(Icons.search),
-              onPressed: () {
-                showSearch(
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Apartments'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.search),
+            onPressed: () {
+              showSearch(
                   context: context,
-                  delegate: CustomSearchDelegate(
-                    selectedPriceRange: selectedPriceRange,
-                    selectedBeds: selectedBeds,
-                    onSaved: (isSaved, index) async {
-                      await _handleSavedStateChange(apartmentsCollection.doc(index), isSaved);
-                    },
-                  ),
-                );
-              },
-            ),
-            IconButton(
-              icon: Icon(Icons.attach_money),
-              onPressed: () {
-                _showPriceFilterDialog(context);
-              },
-            ),
-            IconButton(
-              icon: Icon(Icons.king_bed),
-              onPressed: () {
-                _showBedsFilterDialog(context);
-              },
-            ),
-          ],
-        ),
-        drawer: Drawer(
-          child: ListView(
-            padding: EdgeInsets.zero,
-            children: [
-              DrawerHeader(
-                decoration: BoxDecoration(
-                  color: Colors.blue,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    CircleAvatar(
-                      radius: 40,
-                      backgroundColor: Colors.white,
-                      child: Icon(
-                        Icons.person,
-                        size: 50,
-                        color: Colors.blue,
-                      ),
-                    ),
-                    SizedBox(height: 10),
-                    Text(
-                      'Welcome, User!',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              ListTile(
-                leading: Icon(Icons.home),
-                title: Text('Home'),
-                onTap: () {
-                  Navigator.pop(context);
-                },
-              ),
-              ListTile(
-                leading: Icon(Icons.search),
-                title: Text('Search'),
-                onTap: () {
-                  showSearch(
-                    context: context,
-                    delegate: CustomSearchDelegate(
-                      selectedPriceRange: selectedPriceRange,
-                      selectedBeds: selectedBeds,
-                      onSaved: (isSaved, index) async {
-                        await _handleSavedStateChange(apartmentsCollection.doc(index), isSaved);
-                      },
-                    ),
-                  );
-                },
-              ),
-              ListTile(
-                leading: Icon(Icons.bookmark),
-                title: Text('Saved'),
-                onTap: () {
-                  _navigateToSavedScreen();
-                },
-              ),
-              ListTile(
-                leading: Icon(Icons.attach_money),
-                title: Text('Filter Price'),
-                onTap: () {
-                  _showPriceFilterDialog(context);
-                },
-              ),
-              ListTile(
-                leading: Icon(Icons.king_bed),
-                title: Text('Filter Beds'),
-                onTap: () {
-                  _showBedsFilterDialog(context);
-                },
-              ),
-            ],
+                  delegate: ApartmentSearchDelegate(_apartments));
+            },
           ),
-        ),
-        body: StreamBuilder<QuerySnapshot>(
-          stream: apartmentsCollection.snapshots(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return CircularProgressIndicator();
-            }
-
-            if (snapshot.hasError) {
-              return Text('Error: ${snapshot.error}');
-            }
-
-            if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-              return Text('No apartments found.');
-            }
-
-            List<DocumentSnapshot> apartments = snapshot.data!.docs;
-
-            return ListView.builder(
-              itemCount: apartments.length,
+          ElevatedButton(
+            onPressed: () {
+              showFilterDialog(context);
+            },
+            child: Text('Filter Options'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              resetFilters();
+            },
+            child: Text('Reset Filters'),
+          ),
+        ],
+      ),
+      body: _filteredApartments.isNotEmpty
+          ? ListView.builder(
+              itemCount: _filteredApartments.length,
               itemBuilder: (context, index) {
-                return PropertyListingCard(
-                  apartmentData: apartments[index].data() as Map<String, dynamic>,
-                  isSaved: savedApartments.contains(apartments[index].reference),
-                  onSaved: (isSaved) async {
-                    await _handleSavedStateChange(apartmentsCollection.doc(index.toString()), isSaved);
-                  },
-                );
+                return buildApartmentCard(_filteredApartments[index]);
               },
-            );
-          },
-        ),
-        bottomNavigationBar: BottomNavigationBar(
-          items: [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home),
-              label: 'Home',
+            )
+          : Center(
+              child: CircularProgressIndicator(),
             ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.search),
-              label: 'Search',
+    );
+  }
+
+  Widget buildApartmentCard(Apartment apartment) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ApartmentDetailsScreen(apartment: apartment),
+          ),
+        );
+      },
+      child: Card(
+        margin: EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Container(
+              height: 200,
+              child: PageView(
+                controller: _pageController,
+                children: apartment.images.map((imageUrl) {
+                  return Image.network(
+                    imageUrl,
+                    fit: BoxFit.cover,
+                  );
+                }).toList(),
+              ),
             ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.bookmark),
-              label: 'Saved',
+            Padding(
+              padding: EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    apartment.name,
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Icon(Icons.monetization_on),
+                      SizedBox(width: 8),
+                      Text(apartment.price),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      Icon(Icons.location_on),
+                      SizedBox(width: 8),
+                      Text(apartment.location),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      Icon(Icons.king_bed),
+                      SizedBox(width: 8),
+                      Text('${apartment.beds} Beds'),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      Icon(Icons.home),
+                      SizedBox(width: 8),
+                      Text(apartment.space),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          _launchPhoneCall(apartment.contactNumber);
+                        },
+                        child: Icon(Icons.phone, color: Colors.blue),
+                      ),
+                      SizedBox(width: 8),
+                      TextButton(
+                        onPressed: () {
+                          _launchPhoneCall(apartment.contactNumber);
+                        },
+                        child: Text('Call'),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ],
-          selectedItemColor: Colors.blue,
-          onTap: (index) {
-            switch (index) {
-              case 0:
-                // Home tab
-                break;
-              case 1:
-                // Search tab
-                showSearch(
-                  context: context,
-                  delegate: CustomSearchDelegate(
-                    selectedPriceRange: selectedPriceRange,
-                    selectedBeds: selectedBeds,
-                    onSaved: (isSaved, index) async {
-                      await _handleSavedStateChange(apartmentsCollection.doc(index), isSaved);
-                    },
-                  ),
-                );
-                break;
-              case 2:
-                _navigateToSavedScreen();
-                break;
-            }
-          },
         ),
       ),
     );
   }
 
-  Future<void> _showPriceFilterDialog(BuildContext context) async {
-    RangeValues? newValues = await showDialog<RangeValues>(
+  void showFilterDialog(BuildContext context) {
+    showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Filter Price'),
-          content: RangeSlider(
-            values: selectedPriceRange,
-            min: 0,
-            max: 3000,
-            onChanged: (RangeValues values) {
-              setState(() {
-                selectedPriceRange = values;
-              });
-            },
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(selectedPriceRange);
-              },
-              child: Text('Apply'),
-            ),
-          ],
-        );
-      },
-    );
-
-    if (newValues != null) {
-      setState(() {
-        selectedPriceRange = newValues;
-      });
-    }
-  }
-
-  Future<void> _showBedsFilterDialog(BuildContext context) async {
-    int? newBeds = await showDialog<int>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Filter Beds'),
-          content: DropdownButton<int>(
-            value: selectedBeds,
-            onChanged: (int? value) {
-              setState(() {
-                selectedBeds = value;
-              });
-            },
-            items: List.generate(
-              5,
-              (index) => DropdownMenuItem<int>(
-                value: index + 1,
-                child: Text((index + 1).toString()),
+          title: Text('Filter Options'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ElevatedButton(
+                onPressed: () {
+                  // Apply beds filter
+                  showBedsFilterDialog(context);
+                },
+                child: Text('Beds Filter'),
               ),
-            ),
+              ElevatedButton(
+                onPressed: () {
+                  // Apply price filter
+                  showPriceFilterDialog(context);
+                },
+                child: Text('Price Filter'),
+              ),
+            ],
           ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(selectedBeds);
-              },
-              child: Text('Apply'),
-            ),
-          ],
         );
       },
     );
+  }
 
-    if (newBeds != null) {
+  void showBedsFilterDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Beds Filter'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Select the number of beds:'),
+              DropdownButton<int>(
+                value: _selectedBedsFilter,
+                items: List.generate(5, (index) => index + 1)
+                    .map((int value) {
+                  return DropdownMenuItem<int>(
+                    value: value,
+                    child: Text(value.toString()),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    _selectedBedsFilter = value;
+                  });
+                  applyBedsFilter();
+                  Navigator.pop(context);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void showPriceFilterDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Price Filter'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Enter the price range:'),
+              Row(
+                children: [
+                  Text('Min Price:'),
+                  Expanded(
+                    child: TextFormField(
+                      keyboardType: TextInputType.number,
+                      onChanged: (value) {
+                        _minPriceFilter = double.parse(value);
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              Row(
+                children: [
+                  Text('Max Price:'),
+                  Expanded(
+                    child: TextFormField(
+                      keyboardType: TextInputType.number,
+                      onChanged: (value) {
+                        _maxPriceFilter = double.parse(value);
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  applyPriceFilter();
+                  Navigator.pop(context);
+                },
+                child: Text('Apply'),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void applyBedsFilter() {
+    if (_selectedBedsFilter != null) {
+      List<Apartment> filteredList = _apartments
+          .where((apartment) => apartment.beds == _selectedBedsFilter)
+          .toList();
+
       setState(() {
-        selectedBeds = newBeds;
+        _filteredApartments = filteredList;
       });
     }
   }
 
-  Future<void> _handleSavedStateChange(
-    DocumentReference apartmentRef, bool? isSaved) async {
-    // Get the document snapshot
-    DocumentSnapshot snapshot = await apartmentRef.get();
+  void applyPriceFilter() {
+    if (_minPriceFilter != null && _maxPriceFilter != null) {
+      List<Apartment> filteredList = _apartments
+          .where((apartment) =>
+              double.parse(apartment.price) >= _minPriceFilter! &&
+              double.parse(apartment.price) <= _maxPriceFilter!)
+          .toList();
 
-    // Update Firestore to toggle the isSaved field
-    await apartmentRef.update({'isSaved': isSaved ?? false});
+      setState(() {
+        _filteredApartments = filteredList;
+      });
+    }
+  }
 
-    // Update the saved list based on the toggled state
+  void resetFilters() {
     setState(() {
-      if (isSaved != null && isSaved) {
-        savedApartments.add(snapshot.data() as Map<String, dynamic>);
-        savedApartmentIds.add(snapshot.id);
-      } else {
-        savedApartments.remove(snapshot.data() as Map<String, dynamic>);
-        savedApartmentIds.remove(snapshot.id);
-      }
+      _selectedBedsFilter = null;
+      _minPriceFilter = null;
+      _maxPriceFilter = null;
+      _filteredApartments = _apartments;
     });
   }
 
-  void _navigateToSavedScreen() async {
-    List<Future<DocumentSnapshot>> futures = savedApartmentIds
-        .map((apartmentId) => apartmentsCollection.doc(apartmentId).get())
+    void _launchPhoneCall(String phoneNumber) async {
+    final url = 'tel:$phoneNumber';
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      throw 'Could not launch $url';
+    }
+  }
+}
+
+class Apartment {
+  final String name;
+  final String price;
+  final String location;
+  final int beds;
+  final String space;
+  final List<String> images;
+  final String contactNumber;
+
+  Apartment({
+    required this.name,
+    required this.price,
+    required this.location,
+    required this.beds,
+    required this.space,
+    required this.images,
+    required this.contactNumber,
+  });
+
+  factory Apartment.fromSnapshot(DocumentSnapshot snapshot) {
+    var data = snapshot.data() as Map<String, dynamic>;
+    return Apartment(
+      name: data['name'] ?? '',
+      price: data['price'] ?? '',
+      location: data['location'] ?? '',
+      beds: data['beds'] ?? 0,
+      space: data['space'] ?? '',
+      images: List<String>.from(data['images'] ?? []),
+      contactNumber: data['contactNumber'] ?? '',
+    );
+  }
+}
+
+class ApartmentSearchDelegate extends SearchDelegate<String> {
+  final List<Apartment> apartments;
+
+  ApartmentSearchDelegate(this.apartments);
+
+  @override
+  List<Widget> buildActions(BuildContext context) {
+    return [
+      IconButton(
+        icon: Icon(Icons.clear),
+        onPressed: () {
+          query = '';
+        },
+      ),
+    ];
+  }
+
+  @override
+  Widget buildLeading(BuildContext context) {
+    return IconButton(
+      icon: Icon(Icons.arrow_back),
+      onPressed: () {
+        close(context, '');
+      },
+    );
+  }
+
+  @override
+  Widget buildResults(BuildContext context) {
+    return buildSearchResults(context);
+  }
+
+  @override
+  Widget buildSuggestions(BuildContext context) {
+    return buildSearchResults(context);
+  }
+
+  Widget buildSearchResults(BuildContext context) {
+    List<Apartment> searchResults = apartments
+        .where((apartment) =>
+            apartment.location.toLowerCase().contains(query.toLowerCase()))
         .toList();
 
-    List<DocumentSnapshot> documentSnapshots = await Future.wait(futures);
+    return ListView.builder(
+      itemCount: searchResults.length,
+      itemBuilder: (context, index) {
+        return ListTile(
+          title: Text(searchResults[index].location),
+          onTap: () {
+            // Handle tapping on a search result
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) =>
+                    ApartmentDetailsScreen(apartment: searchResults[index]),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+}
 
-    // Access the navigator key to push the route
-    navigatorKey.currentState?.push(
-      MaterialPageRoute(
-        builder: (context) => SavedScreen(savedApartments: documentSnapshots),
+class ApartmentDetailsScreen extends StatelessWidget {
+  final Apartment apartment;
+
+  ApartmentDetailsScreen({required this.apartment});
+
+  @override
+  Widget build(BuildContext context) {
+    // Create an instance of _HomeScreenState to access launchPhoneCall
+    final _HomeScreenState homeScreenState = _HomeScreenState();
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(apartment.name),
+      ),
+      body: SingleChildScrollView(
+        padding: EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Container(
+              height: 200,
+              child: PageView(
+                children: apartment.images.map((imageUrl) {
+                  return Image.network(
+                    imageUrl,
+                    fit: BoxFit.cover,
+                  );
+                }).toList(),
+              ),
+            ),
+            SizedBox(height: 16),
+            Text(
+              'Price: ${apartment.price}',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 8),
+            Text(
+              'Location: ${apartment.location}',
+              style: TextStyle(fontSize: 18),
+            ),
+            SizedBox(height: 8),
+            Text(
+              'Beds: ${apartment.beds}',
+              style: TextStyle(fontSize: 18),
+            ),
+            SizedBox(height: 8),
+            Text(
+              'Space: ${apartment.space}',
+              style: TextStyle(fontSize: 18),
+            ),
+            SizedBox(height: 8),
+            Row(
+              children: [
+                GestureDetector(
+                  onTap: () {
+                    homeScreenState._launchPhoneCall(apartment.contactNumber);
+                  },
+                  child: Icon(Icons.phone, color: Colors.blue),
+                ),
+                SizedBox(width: 8),
+                TextButton(
+                  onPressed: () {
+                    homeScreenState._launchPhoneCall(apartment.contactNumber);
+                  },
+                  child: Text('Call'),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
