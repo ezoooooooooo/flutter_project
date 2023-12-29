@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'settings_screen.dart'; // Import the SettingsScreen
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -74,6 +75,43 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Text('Reset Filters'),
           ),
         ],
+      ),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: <Widget>[
+            DrawerHeader(
+              decoration: BoxDecoration(
+                color: Colors.blue,
+              ),
+              child: Text(
+                'User Name', // Replace with the user's name
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                ),
+              ),
+            ),
+            ListTile(
+              title: Text('Settings'),
+              onTap: () {
+                // Navigate to the SettingsScreen
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => SettingsScreen()),
+                );
+              },
+            ),
+          ListTile(
+  title: Text('Logout'),
+  onTap: () {
+    // Navigate to the login screen
+    Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
+  },
+),
+
+          ],
+        ),
       ),
       body: _filteredApartments.isNotEmpty
           ? ListView.builder(
@@ -328,7 +366,7 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-    void _launchPhoneCall(String phoneNumber) async {
+  void _launchPhoneCall(String phoneNumber) async {
     final url = 'tel:$phoneNumber';
     if (await canLaunch(url)) {
       await launch(url);
