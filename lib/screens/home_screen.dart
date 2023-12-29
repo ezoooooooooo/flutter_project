@@ -343,19 +343,25 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  void applyPriceFilter() {
-    if (_minPriceFilter != null && _maxPriceFilter != null) {
-      List<Apartment> filteredList = _apartments
-          .where((apartment) =>
-              double.parse(apartment.price) >= _minPriceFilter! &&
-              double.parse(apartment.price) <= _maxPriceFilter!)
-          .toList();
+void applyPriceFilter() {
+  if (_minPriceFilter != null && _maxPriceFilter != null) {
+    List<Apartment> filteredList = _apartments
+        .where((apartment) {
+          double apartmentPrice =
+              double.tryParse(apartment.price.replaceAll('\$', '')) ?? 0;
+          return apartmentPrice >= _minPriceFilter! &&
+              apartmentPrice <= _maxPriceFilter!;
+        })
+        .toList();
 
-      setState(() {
-        _filteredApartments = filteredList;
-      });
-    }
+    setState(() {
+      _filteredApartments = filteredList;
+    });
+  } else {
+    // If no price filter is selected, reset to all apartments
+    resetFilters();
   }
+}
 
   void resetFilters() {
     setState(() {
