@@ -380,6 +380,7 @@ void applyPriceFilter() {
     throw 'Could not launch $url';
   }
 }
+
 }
 
 class Apartment {
