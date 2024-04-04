@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:studenthousingapp/main.dart';
 import '../widgets/rounded_button.dart';
 import '../widgets/rounded_textfield.dart';
@@ -13,7 +12,7 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -73,22 +72,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               onPressed: () async {
                                 String email = _emailController.text;
 
-                                try {
-                                  await _auth.sendPasswordResetEmail(
-                                    email: email,
-                                  );
-                                  showSuccessMessage(
-                                    context,
-                                    'Password reset email sent',
-                                  );
-                                  Navigator.pop(context);
-                                } catch (e) {
-                                  showErrorMessage(
-                                    context,
-                                    'Error sending reset email',
-                                  );
-                                  Navigator.pop(context);
-                                }
+                               
                               },
                               child: Text('Send Email'),
                             ),
@@ -130,21 +114,7 @@ class _LoginScreenState extends State<LoginScreen> {
   String password = _passwordController.text;
   BuildContext context = _scaffoldKey.currentContext!;
 
-  try {
-    await _auth.signInWithEmailAndPassword(
-      email: email,
-      password: password,
-    );
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => HomeScreen()),
-    );
-
-    // If needed, you can add actions after successful login here
-  } catch (e) {
-    // Authentication failed, show error message
-    showErrorMessage(context, 'Invalid email or password');
-  }
+  
 }
 
   void showErrorMessage(BuildContext context, String message) {

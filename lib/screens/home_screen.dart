@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'settings_screen.dart'; // Import the SettingsScreen
+import 'package:url_launcher/url_launcher.dart';
+
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -9,7 +9,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  late PageController _pageController;
   late List<Apartment> _apartments;
   late List<Apartment> _filteredApartments;
   TextEditingController _searchController = TextEditingController();
@@ -20,20 +19,34 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _pageController = PageController();
     _apartments = [];
     _filteredApartments = [];
-
-    // Fetch apartments from Firestore
     fetchApartments();
   }
 
   void fetchApartments() async {
-    var snapshots =
-        await FirebaseFirestore.instance.collection('housing').get();
-
-    List<Apartment> apartments =
-        snapshots.docs.map((doc) => Apartment.fromSnapshot(doc)).toList();
+    // Simulated data fetching or initialization
+    List<Apartment> apartments = [
+      Apartment(
+        name: 'Apartment 1',
+        price: '\$1000',
+        location: 'Location 1',
+        beds: 2,
+        space: '1000 sqft',
+        images: ['image_url_1', 'image_url_2'],
+        contactNumber: '1234567890',
+      ),
+      Apartment(
+        name: 'Apartment 2',
+        price: '\$1200',
+        location: 'Location 2',
+        beds: 3,
+        space: '1200 sqft',
+        images: ['image_url_3', 'image_url_4'],
+        contactNumber: '0987654321',
+      ),
+      // Add more sample data if needed
+    ];
 
     setState(() {
       _apartments = apartments;
@@ -42,26 +55,11 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   @override
-  void dispose() {
-    _pageController.dispose();
-    _searchController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Apartments'),
         actions: [
-          IconButton(
-            icon: Icon(Icons.search),
-            onPressed: () {
-              showSearch(
-                  context: context,
-                  delegate: ApartmentSearchDelegate(_apartments));
-            },
-          ),
           ElevatedButton(
             onPressed: () {
               showFilterDialog(context);
@@ -102,14 +100,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 );
               },
             ),
-          ListTile(
-  title: Text('Logout'),
-  onTap: () {
-    // Navigate to the login screen
-    Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
-  },
-),
-
           ],
         ),
       ),
@@ -127,92 +117,53 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget buildApartmentCard(Apartment apartment) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ApartmentDetailsScreen(apartment: apartment),
+    return Card(
+      margin: EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Container(
+            height: 200,
+            child: PageView(
+              children: apartment.images.map((imageUrl) {
+                return Image.network(
+                  imageUrl,
+                  fit: BoxFit.cover,
+                );
+              }).toList(),
+            ),
           ),
-        );
-      },
-      child: Card(
-        margin: EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Container(
-              height: 200,
-              child: PageView(
-                controller: _pageController,
-                children: apartment.images.map((imageUrl) {
-                  return Image.network(
-                    imageUrl,
-                    fit: BoxFit.cover,
-                  );
-                }).toList(),
-              ),
+          Padding(
+            padding: EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  apartment.name,
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                SizedBox(height: 8),
+                Text('Price: ${apartment.price}'),
+                Text('Location: ${apartment.location}'),
+                Text('Beds: ${apartment.beds}'),
+                Text('Space: ${apartment.space}'),
+                GestureDetector(
+                  onTap: () {
+                    _launchPhoneCall(apartment.contactNumber);
+                  },
+                  child: Icon(Icons.phone, color: Colors.blue),
+                ),
+                SizedBox(width: 8),
+                TextButton(
+                  onPressed: () {
+                    _launchPhoneCall(apartment.contactNumber);
+                  },
+                  child: Text('Call'),
+                ),
+              ],
             ),
-            Padding(
-              padding: EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    apartment.name,
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Icon(Icons.monetization_on),
-                      SizedBox(width: 8),
-                      Text(apartment.price),
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      Icon(Icons.location_on),
-                      SizedBox(width: 8),
-                      Text(apartment.location),
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      Icon(Icons.king_bed),
-                      SizedBox(width: 8),
-                      Text('${apartment.beds} Beds'),
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      Icon(Icons.home),
-                      SizedBox(width: 8),
-                      Text(apartment.space),
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      GestureDetector(
-                        onTap: () {
-                          _launchPhoneCall(apartment.contactNumber);
-                        },
-                        child: Icon(Icons.phone, color: Colors.blue),
-                      ),
-                      SizedBox(width: 8),
-                      TextButton(
-                        onPressed: () {
-                          _launchPhoneCall(apartment.contactNumber);
-                        },
-                        child: Text('Call'),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -298,7 +249,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: TextFormField(
                       keyboardType: TextInputType.number,
                       onChanged: (value) {
-                        _minPriceFilter = double.parse(value);
+                        _minPriceFilter = double.tryParse(value);
                       },
                     ),
                   ),
@@ -311,7 +262,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: TextFormField(
                       keyboardType: TextInputType.number,
                       onChanged: (value) {
-                        _maxPriceFilter = double.parse(value);
+                        _maxPriceFilter = double.tryParse(value);
                       },
                     ),
                   ),
@@ -343,25 +294,25 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-void applyPriceFilter() {
-  if (_minPriceFilter != null && _maxPriceFilter != null) {
-    List<Apartment> filteredList = _apartments
-        .where((apartment) {
-          double apartmentPrice =
-              double.tryParse(apartment.price.replaceAll('\$', '')) ?? 0;
-          return apartmentPrice >= _minPriceFilter! &&
-              apartmentPrice <= _maxPriceFilter!;
-        })
-        .toList();
+  void applyPriceFilter() {
+    if (_minPriceFilter != null && _maxPriceFilter != null) {
+      List<Apartment> filteredList = _apartments
+          .where((apartment) {
+            double apartmentPrice =
+                double.tryParse(apartment.price.replaceAll('\$', '')) ?? 0;
+            return apartmentPrice >= _minPriceFilter! &&
+                apartmentPrice <= _maxPriceFilter!;
+          })
+          .toList();
 
-    setState(() {
-      _filteredApartments = filteredList;
-    });
-  } else {
-    // If no price filter is selected, reset to all apartments
-    resetFilters();
+      setState(() {
+        _filteredApartments = filteredList;
+      });
+    } else {
+      // If no price filter is selected, reset to all apartments
+      resetFilters();
+    }
   }
-}
 
   void resetFilters() {
     setState(() {
@@ -372,15 +323,14 @@ void applyPriceFilter() {
     });
   }
 
- void _launchPhoneCall(String phoneNumber) async {
-  final url = 'tel:$phoneNumber';
-  if (await canLaunch(url)) {
-    await launch(url);
-  } else {
-    throw 'Could not launch $url';
+  void _launchPhoneCall(String phoneNumber) async {
+    final url = 'tel:$phoneNumber';
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      throw 'Could not launch $url';
+    }
   }
-}
-
 }
 
 class Apartment {
@@ -401,156 +351,4 @@ class Apartment {
     required this.images,
     required this.contactNumber,
   });
-
-  factory Apartment.fromSnapshot(DocumentSnapshot snapshot) {
-    var data = snapshot.data() as Map<String, dynamic>;
-    return Apartment(
-      name: data['name'] ?? '',
-      price: data['price'] ?? '',
-      location: data['location'] ?? '',
-      beds: data['beds'] ?? 0,
-      space: data['space'] ?? '',
-      images: List<String>.from(data['images'] ?? []),
-      contactNumber: data['contactNumber'] ?? '',
-    );
-  }
-}
-
-class ApartmentSearchDelegate extends SearchDelegate<String> {
-  final List<Apartment> apartments;
-
-  ApartmentSearchDelegate(this.apartments);
-
-  @override
-  List<Widget> buildActions(BuildContext context) {
-    return [
-      IconButton(
-        icon: Icon(Icons.clear),
-        onPressed: () {
-          query = '';
-        },
-      ),
-    ];
-  }
-
-  @override
-  Widget buildLeading(BuildContext context) {
-    return IconButton(
-      icon: Icon(Icons.arrow_back),
-      onPressed: () {
-        close(context, '');
-      },
-    );
-  }
-
-  @override
-  Widget buildResults(BuildContext context) {
-    return buildSearchResults(context);
-  }
-
-  @override
-  Widget buildSuggestions(BuildContext context) {
-    return buildSearchResults(context);
-  }
-
-  Widget buildSearchResults(BuildContext context) {
-    List<Apartment> searchResults = apartments
-        .where((apartment) =>
-            apartment.location.toLowerCase().contains(query.toLowerCase()))
-        .toList();
-
-    return ListView.builder(
-      itemCount: searchResults.length,
-      itemBuilder: (context, index) {
-        return ListTile(
-          title: Text(searchResults[index].location),
-          onTap: () {
-            // Handle tapping on a search result
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) =>
-                    ApartmentDetailsScreen(apartment: searchResults[index]),
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-}
-
-class ApartmentDetailsScreen extends StatelessWidget {
-  final Apartment apartment;
-
-  ApartmentDetailsScreen({required this.apartment});
-
-  @override
-  Widget build(BuildContext context) {
-    // Create an instance of _HomeScreenState to access launchPhoneCall
-    final _HomeScreenState homeScreenState = _HomeScreenState();
-
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(apartment.name),
-      ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Container(
-              height: 200,
-              child: PageView(
-                children: apartment.images.map((imageUrl) {
-                  return Image.network(
-                    imageUrl,
-                    fit: BoxFit.cover,
-                  );
-                }).toList(),
-              ),
-            ),
-            SizedBox(height: 16),
-            Text(
-              'Price: ${apartment.price}',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 8),
-            Text(
-              'Location: ${apartment.location}',
-              style: TextStyle(fontSize: 18),
-            ),
-            SizedBox(height: 8),
-            Text(
-              'Beds: ${apartment.beds}',
-              style: TextStyle(fontSize: 18),
-            ),
-            SizedBox(height: 8),
-            Text(
-              'Space: ${apartment.space}',
-              style: TextStyle(fontSize: 18),
-            ),
-            SizedBox(height: 8),
-            Row(
-              children: [
-                GestureDetector(
-                  onTap: () {
-                    homeScreenState._launchPhoneCall(apartment.contactNumber);
-                  },
-                  child: Icon(Icons.phone, color: Colors.blue),
-                ),
-                SizedBox(width: 8),
-                TextButton(
-                  onPressed: () {
-                    homeScreenState._launchPhoneCall(apartment.contactNumber);
-                  },
-                  child: Text('Call'),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+
 import '../widgets/rounded_button.dart';
 import '../widgets/rounded_textfield.dart';
 import 'home_screen.dart';
@@ -11,7 +11,7 @@ class SignUpScreen extends StatelessWidget {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  
 
   @override
   Widget build(BuildContext context) {
@@ -73,34 +73,7 @@ class SignUpScreen extends StatelessWidget {
                       return;
                     }
 
-                    try {
-                      // Create user in Firebase Authentication
-                      UserCredential userCredential =
-                          await _auth.createUserWithEmailAndPassword(
-                        email: email,
-                        password: password,
-                      );
-
-                      // Check if signup was successful
-                      if (userCredential.user != null) {
-                        // Add user's name to Firebase user profile
-                        await userCredential.user!.updateDisplayName(name);
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(builder: (context) => HomeScreen()),
-                        );
-
-                        // You can add additional actions here if needed
-
-                        // Example: show a success message
-                        showSuccessMessage(context, 'Signup successful');
-                      } else {
-                        showErrorMessage(context, 'Signup failed');
-                      }
-                    } catch (e) {
-                      // Handle signup errors
-                      showErrorMessage(context, 'Signup failed: $e');
-                    }
+                  
                   },
                 ),
               ],
