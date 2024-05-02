@@ -50,29 +50,39 @@ class LoginScreen extends StatelessWidget {
                     String email = _emailController.text;
                     String password = _passwordController.text;
 
-                    // Replace this with your login logic using your Node.js server
+                    // API endpoint for login
                     var url = Uri.parse('http://localhost:3000/api/auth/login');
-                    var response = await http.post(
-                      url,
-                      body: {
-                        'email': email,
-                        'password': password,
-                      },
-                    );
 
-                    // Check if login was successful
-                    if (response.statusCode == 200) {
-                      // Navigate to the home screen
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (context) => HomeScreen()),
+                    try {
+                      var response = await http.post(
+                        url,
+                        body: {
+                          'email': email,
+                          'password': password,
+                        },
                       );
-                    } else {
-                      // Display error message
+
+                      if (response.statusCode == 200) {
+                        // Navigate to the home screen
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (context) => HomeScreen()),
+                        );
+                      } else {
+                        // Display error message
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Login failed. Please check your credentials.'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      }
+                    } catch (e) {
+                      // Handle network errors
+                      print('Error during login: $e');
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text(
-                              'Login failed. Please check your credentials.'),
+                          content: Text('Failed to connect to the server. Please try again later.'),
                           backgroundColor: Colors.red,
                         ),
                       );
