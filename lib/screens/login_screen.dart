@@ -1,26 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:studenthousingapp/main.dart';
+import 'package:http/http.dart' as http;
 import '../widgets/rounded_button.dart';
 import '../widgets/rounded_textfield.dart';
-import 'home_screen.dart';
+import './home_screen.dart';
 
-
-class LoginScreen extends StatefulWidget {
-  
-  @override
-  _LoginScreenState createState() => _LoginScreenState();
-}
-
-class _LoginScreenState extends State<LoginScreen> {
-  
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+class LoginScreen extends StatelessWidget {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      key: _scaffoldKey,
       appBar: AppBar(
         title: Text('Login'),
       ),
@@ -51,55 +41,41 @@ class _LoginScreenState extends State<LoginScreen> {
                   icon: Icons.lock,
                   isPassword: true,
                 ),
-                SizedBox(height: 10),
-                TextButton(
-                  onPressed: () {
-                    showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return AlertDialog(
-                          title: Text('Forgot Password'),
-                          content:
-                              Text('Enter your email to reset your password.'),
-                          actions: [
-                            TextButton(
-                              onPressed: () {
-                                Navigator.pop(context);
-                              },
-                              child: Text('Cancel'),
-                            ),
-                            TextButton(
-                              onPressed: () async {
-                                String email = _emailController.text;
-
-                               
-                              },
-                              child: Text('Send Email'),
-                            ),
-                          ],
-                        );
-                      },
-                    );
-                  },
-                  child: Text(
-                    'Forgot Password?',
-                    style: TextStyle(color: Colors.blueAccent),
-                  ),
-                ),
-                  Center(
-                  child: GestureDetector(
-                    onTap: _navigateToSignUpScreen,
-                    child: Text(
-                      'Don\'t have an account? Sign up',
-                      style: TextStyle(color: Colors.blueAccent),
-                    ),
-                  ),
-                ),
                 SizedBox(height: 20),
                 RoundedButton(
                   text: 'Login',
                   icon: Icons.login,
-                  onPressed: _login,
+                  onPressed: () async {
+                    String email = _emailController.text;
+                    String password = _passwordController.text;
+
+                    // Replace this with your login logic using your Node.js server
+                    var url = Uri.parse('http://localhost:3000/api/auth/login');
+                    var response = await http.post(
+                      url,
+                      body: {
+                        'email': email,
+                        'password': password,
+                      },
+                    );
+
+                    // Check if login was successful
+                    if (response.statusCode == 200) {
+                      // Navigate to the home screen
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => HomeScreen()),
+                      );
+                    } else {
+                      // Display error message
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Login failed. Please check your credentials.'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                  },
                 ),
               ],
             ),
@@ -107,41 +83,5 @@ class _LoginScreenState extends State<LoginScreen> {
         ],
       ),
     );
-  }
-
-  void _login() async {
-  String email = _emailController.text;
-  String password = _passwordController.text;
-  BuildContext context = _scaffoldKey.currentContext!;
-
-  
-}
-
-  void showErrorMessage(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-      ),
-    );
-  }
-
-  void showSuccessMessage(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.green,
-      ),
-    );
-  }
-  void _navigateToSignUpScreen() {
-    Navigator.pushReplacementNamed(context, MyApp.signupRoute);
-  }
-
-  @override
-  void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
-    super.dispose();
   }
 }
