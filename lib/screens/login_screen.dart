@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import '../widgets/rounded_button.dart';
 import '../widgets/rounded_textfield.dart';
 import './home_screen.dart';
+import 'signup_screen.dart';
 
 class LoginScreen extends StatelessWidget {
   final TextEditingController _emailController = TextEditingController();
@@ -70,12 +71,27 @@ class LoginScreen extends StatelessWidget {
                       // Display error message
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text('Login failed. Please check your credentials.'),
+                          content: Text(
+                              'Login failed. Please check your credentials.'),
                           backgroundColor: Colors.red,
                         ),
                       );
                     }
                   },
+                ),
+                SizedBox(height: 10),
+                TextButton(
+                  onPressed: () {
+                    // Navigate to the sign-up screen
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => SignUpScreen()),
+                    );
+                  },
+                  child: Text(
+                    "Don't have an account? Sign up",
+                    style: TextStyle(color: Colors.white),
+                  ),
                 ),
               ],
             ),
