@@ -1,47 +1,143 @@
-// settings_screen.dart
-
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 class SettingsScreen extends StatelessWidget {
+  Future<void> updateName(BuildContext context, String newName) async {
+    try {
+      var response = await http.patch(
+        Uri.parse('http://localhost:3000/api/user/name'),
+        body: {
+          'name': newName,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Name updated successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else {
+        // Show error message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to update name: ${response.body}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      // Show error message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to update name: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  Future<void> updatePassword(BuildContext context, String newPassword) async {
+    try {
+      var response = await http.patch(
+        Uri.parse('http://localhost:3000/api/user/password'),
+        body: {
+          'password': newPassword,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Password updated successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else {
+        // Show error message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to update password: ${response.body}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      // Show error message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to update password: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  Future<void> deleteAccount(BuildContext context) async {
+    try {
+      var response = await http.delete(
+        Uri.parse('http://localhost:3000/api/user/delete'),
+      );
+
+      if (response.statusCode == 200) {
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Account deleted successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else {
+        // Show error message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to delete account: ${response.body}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      // Show error message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to delete account: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Settings'),
       ),
-      body: Padding(
-        padding: EdgeInsets.all(16),
+      body: Center(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
-              'Settings Page',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 16),
-            ListTile(
-              title: Text('Notification Settings'),
-              subtitle: Text('Configure your notification preferences'),
-              onTap: () {
-                // Handle notification settings
-                // You can navigate to a detailed notification settings screen
-                // or show a dialog with notification options
-                // For now, let's just print a message
-                print('Navigate to Notification Settings');
+            ElevatedButton(
+              onPressed: () {
+                updateName(context, 'New Name');
               },
+              child: Text('Update Name'),
             ),
-            ListTile(
-              title: Text('Account Settings'),
-              subtitle: Text('Manage your account details'),
-              onTap: () {
-                // Handle account settings
-                // You can navigate to a detailed account settings screen
-                // or show a dialog with account options
-                // For now, let's just print a message
-                print('Navigate to Account Settings');
+            ElevatedButton(
+              onPressed: () {
+                updatePassword(context, 'New Password');
               },
+              child: Text('Update Password'),
             ),
-            // Add more settings as needed
+            ElevatedButton(
+              onPressed: () {
+                deleteAccount(context);
+              },
+              child: Text('Delete Account'),
+            ),
           ],
         ),
       ),

@@ -1,17 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:http/http.dart' as http; // Import the http package for making HTTP requests
 import '../widgets/rounded_button.dart';
 import '../widgets/rounded_textfield.dart';
-import 'home_screen.dart';
+import './home_screen.dart';
 
 class SignUpScreen extends StatelessWidget {
-  
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-
-  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   @override
   Widget build(BuildContext context) {
@@ -65,40 +62,34 @@ class SignUpScreen extends StatelessWidget {
                     String password = _passwordController.text;
 
                     // Validate name, email, and password
-                    if (name.isEmpty ||
-                        !isValidEmail(email) ||
-                        !isValidPassword(password)) {
-                      showErrorMessage(
-                          context, 'Invalid input. Please check your details.');
+                    if (name.isEmpty || !isValidEmail(email) || !isValidPassword(password)) {
+                      showErrorMessage(context, 'Invalid input. Please check your details.');
                       return;
                     }
 
                     try {
-                      // Create user in Firebase Authentication
-                      UserCredential userCredential =
-                          await _auth.createUserWithEmailAndPassword(
-                        email: email,
-                        password: password,
+                      // Send a POST request to your server with signup data
+                     var url = Uri.parse('http://localhost:3000/api/auth/signup');
+                     var response = await http.post(
+                      url,
+                      body: {
+                        'name': name,
+                        'email': email,
+                        'password': password,
+                      },
                       );
 
                       // Check if signup was successful
-                      if (userCredential.user != null) {
-                        // Add user's name to Firebase user profile
-                        await userCredential.user!.updateDisplayName(name);
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(builder: (context) => HomeScreen()),
-                        );
-
-                        // You can add additional actions here if needed
-
-                        // Example: show a success message
+                      if (response.statusCode == 200) {
+                        // Show success message and navigate to home screen
                         showSuccessMessage(context, 'Signup successful');
+                        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomeScreen()));
                       } else {
-                        showErrorMessage(context, 'Signup failed');
+                        // Show error message based on response from server
+                        showErrorMessage(context, 'Signup failed: ${response.body}');
                       }
                     } catch (e) {
-                      // Handle signup errors
+                      // Handle other errors
                       showErrorMessage(context, 'Signup failed: $e');
                     }
                   },
